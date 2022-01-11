@@ -41,15 +41,17 @@ export default function Home() {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(text)
     setLoading(true)
     axios.get('https://api.tetun.org/ban-spell-correct', { params: {text}})
       .then(response => {
         const result = response.data.result
-        console.log(result)
         setFixedText(result)
         setLoading(false)
-      })
+      }).catch((error) => {
+        setLoading(false)
+        // eslint-disable-next-line no-alert
+        window.alert(error);
+      });
   };
 
   return (
