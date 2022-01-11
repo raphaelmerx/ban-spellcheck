@@ -18,14 +18,17 @@ import axios from 'axios';
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Build using '}
+      {'Built using '}
       <Link color="inherit" href="https://github.com/mammothb/symspellpy">
         SymSpell
       </Link>{' '}
       {'trained on '}
       <Link color="inherit" href="https://ban.wikipedia.org/">
         Balinese Wikipedia
-      </Link>{' data'}
+      </Link>{' data '}
+      <Link color="inherit" href="https://github.com/raphaelmerx/ban-spellcheck">
+        (source)
+      </Link>
     </Typography>
   );
 }
@@ -69,7 +72,9 @@ export default function Home() {
           <Typography component="h1" variant="h5">
             Balinese space fixer
           </Typography>
-          <Box component="form" noValidate sx={{ mt: 1 }}>
+        </Box>
+        <Box>
+          <Box sx={{ mt: 1 }}>
             <TextField
               margin="normal"
               required
