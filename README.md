@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Balinese spell fixer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React frontend to add spaces to Balinese text.
 
 ## Available Scripts
 
