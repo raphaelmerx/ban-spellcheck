@@ -70,7 +70,7 @@ export default function Home() {
             <SpaceBar />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Balinese space fixer
+            Balinese Spell Fixer
           </Typography>
         </Box>
         <Box>
