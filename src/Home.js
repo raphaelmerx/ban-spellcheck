@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import LoadingButton from '@mui/lab/LoadingButton';
+import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import SpaceBar from '@mui/icons-material/SpaceBar';
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import ThumbsUpDownOutlinedIcon from '@mui/icons-material/ThumbsUpDownOutlined';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 
 import axios from 'axios';
 
@@ -35,9 +46,20 @@ const theme = createTheme();
 
 export default function Home() {
 
-  const [text, setText] = useState('');
-  const [fixedText, setFixedText] = useState('');
+  const [text, setText] = useState('Raris mabejug daun bilané marupa lingga');
+  const [fixedText, setFixedText] = useState('Raris mabaju daun bulane mrupa linga.');
   const [loading, setLoading] = useState(false);
+  const [suggestedText, setSuggestedText] = useState('Raris mabaju daun bulane mrupa linga. ');
+
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -46,6 +68,7 @@ export default function Home() {
       .then(response => {
         const result = response.data.result
         setFixedText(result)
+        setSuggestedText(result)
         setLoading(false)
       }).catch((error) => {
         setLoading(false)
@@ -60,7 +83,8 @@ export default function Home() {
         <CssBaseline />
         <Box
           sx={{
-            marginTop: 8,
+            marginTop: 5,
+            marginBottom: 5,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -70,7 +94,7 @@ export default function Home() {
             <SpaceBar />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Balinese Spell Fixer
+            Balinese Spell Checker
           </Typography>
         </Box>
         <Box>
@@ -84,6 +108,8 @@ export default function Home() {
               name="ban-text"
               minRows="3"
               onChange={e => setText(e.target.value)}
+              spellCheck={false}
+              value={text}
               multiline
               autoFocus
             />
@@ -94,14 +120,55 @@ export default function Home() {
               sx={{ mt: 2, mb: 3 }}
               loading={loading}
             >
-              Fix spaces
+              Fix spelling
             </LoadingButton>
             <Grid container>
               {fixedText}
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 8, mb: 4 }} />
+        {fixedText && <Grid
+          container
+          direction="row"
+          justifyContent="flex-end"
+          >
+            <Tooltip title="Edit spelling">
+              <IconButton onClick={handleClickOpen}>
+                <ThumbsUpDownOutlinedIcon/>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Copy">
+              <IconButton
+                onClick={() => {navigator.clipboard.writeText(fixedText)}}
+              >
+                <ContentCopy />
+              </IconButton>
+            </Tooltip>
+        </Grid> }
+      <Dialog open={open} onClose={handleClose}>
+        <DialogTitle>Edit spelling</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your contribution will be used to improve quality of the Balinese spell checker.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="suggestion"
+            fullWidth
+            variant="standard"
+            multiline
+            value={suggestedText}
+            onChange={e => setSuggestedText(e.target.value)}
+            spellCheck={false}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleClose}>Send</Button>
+        </DialogActions>
+      </Dialog>
+        <Copyright sx={{ mt: 12, mb: 4 }} />
       </Container>
     </ThemeProvider>
   );
