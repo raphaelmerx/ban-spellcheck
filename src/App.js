@@ -1,6 +1,5 @@
 
 import { ThemeProvider } from '@mui/material/styles';
-import GlobalStyles from './theme/globalStyles';
 import customTheme from './theme';
 
 import Home from './Home'

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import LoadingButton from '@mui/lab/LoadingButton';
 import Button from '@mui/material/Button';
@@ -24,6 +24,8 @@ import Snackbar from '@mui/material/Snackbar';
 
 import axios from 'axios';
 
+const API_ENDPOINT = process.env.REACT_APP_API_ENDPOINT || 'https://api.tetun.org';
+
 function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -42,55 +44,98 @@ function Copyright(props) {
   );
 }
 
-export default function Home() {
-
-  const [text, setText] = useState('Raris mabejug daun bilané marupa lingga');
-  const [fixedText, setFixedText] = useState('Raris mabaju daun bulane mrupa linga.');
-  const [loading, setLoading] = useState(false);
+function SuggestionDialog(props) {
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
-  const [suggestedText, setSuggestedText] = useState('Raris mabaju daun bulane mrupa linga. ');
-
-  const [openDialog, setOpenDialog] = useState(false);
   const [openSuggestionConfirm, setOpenSuggestionConfirm] = useState(false);
+  const [suggestedText, setSuggestedText] = useState(props.fixedText);
 
-  const handleClickOpen = () => {
-    setOpenDialog(true);
-  };
+  useEffect(() => {
+    setSuggestedText(props.fixedText)
+  }, [props.fixedText]);
 
-  const handleClose = () => {
-    setOpenDialog(false);
-  };
 
-  const spellCorrect = (event) => {
-    event.preventDefault();
-    setLoading(true)
-    axios.get('https://api.tetun.org/ban-spell-correct', { params: {text}})
-      .then(response => {
-        const result = response.data.result
-        setFixedText(result)
-        setSuggestedText(result)
-        setLoading(false)
-      }).catch((error) => {
-        setLoading(false)
-        // eslint-disable-next-line no-alert
-        window.alert(error);
-      });
+  const closeDialog = () => {
+    props.setOpen(false);
   };
 
   const sendSuggestion = (event) => {
     event.preventDefault();
     setLoadingSuggestion(true)
-    axios.post('https://api.tetun.org/create-suggestion', {
-      initial: text,
-      corrected: fixedText,
+    axios.post(`${API_ENDPOINT}/create-suggestion`, {
+      initial: props.initialText,
+      corrected: props.fixedText,
       suggestion: suggestedText,
     }).then(response => {
-        setOpenDialog(false)
-        setFixedText(suggestedText)
+        props.setOpen(false)
+        props.onSuccess(suggestedText)
         setLoadingSuggestion(false)
         setOpenSuggestionConfirm(true)
       }).catch((error) => {
         setLoadingSuggestion(false)
+        // eslint-disable-next-line no-alert
+        window.alert(error);
+      });
+  };
+
+  return (
+    <React.Fragment>
+      <Dialog open={props.open} onClose={closeDialog}>
+        <DialogTitle>Edit spelling</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Your contribution will improve the quality of the Balinese spell checker.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="suggestion"
+            fullWidth
+            variant="standard"
+            multiline
+            value={suggestedText}
+            onChange={e => setSuggestedText(e.target.value)}
+            spellCheck={false}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeDialog}>Cancel</Button>
+          <LoadingButton
+            onClick={sendSuggestion}
+            loading={loadingSuggestion}
+          >
+            Send
+          </LoadingButton>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={openSuggestionConfirm}
+        autoHideDuration={6000}
+        onClose={() => setOpenSuggestionConfirm(false)}
+        message="Thank you for the spelling suggestion!"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
+    </React.Fragment>
+  )
+}
+
+export default function Home() {
+
+  const [text, setText] = useState('');
+  const [fixedText, setFixedText] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const spellCorrect = (event) => {
+    event.preventDefault();
+    setLoading(true)
+    axios.get(`${API_ENDPOINT}/ban-spell-correct`, { params: {text}})
+      .then(response => {
+        const result = response.data.result
+        setFixedText(result)
+        setLoading(false)
+      }).catch((error) => {
+        setLoading(false)
         // eslint-disable-next-line no-alert
         window.alert(error);
       });
@@ -151,7 +196,7 @@ export default function Home() {
           justifyContent="flex-end"
           >
             <Tooltip title="Edit spelling">
-              <IconButton onClick={handleClickOpen}>
+              <IconButton onClick={e => setOpenDialog(true)}>
                 <ThumbsUpDownOutlinedIcon/>
               </IconButton>
             </Tooltip>
@@ -163,41 +208,13 @@ export default function Home() {
               </IconButton>
             </Tooltip>
         </Grid> }
-      <Dialog open={openDialog} onClose={handleClose}>
-        <DialogTitle>Edit spelling</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Your contribution will improve the quality of the Balinese spell checker.
-          </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            id="suggestion"
-            fullWidth
-            variant="standard"
-            multiline
-            value={suggestedText}
-            onChange={e => setSuggestedText(e.target.value)}
-            spellCheck={false}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <LoadingButton
-            onClick={sendSuggestion}
-            loading={loadingSuggestion}
-          >
-            Send
-          </LoadingButton>
-        </DialogActions>
-      </Dialog>
-      <Snackbar
-        open={openSuggestionConfirm}
-        autoHideDuration={6000}
-        onClose={() => setOpenSuggestionConfirm(false)}
-        message="Thank you for the spelling suggestion!"
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      />
+      <SuggestionDialog
+        open={openDialog}
+        setOpen={setOpenDialog}
+        initialText={text}
+        fixedText={fixedText}
+        onSuccess={savedText => setFixedText(savedText)}
+      ></SuggestionDialog>
         <Copyright sx={{ mt: 12, mb: 4 }} />
       </Container>
   );
