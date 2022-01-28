@@ -44,6 +44,32 @@ function Copyright(props) {
   );
 }
 
+function CopyButton(props) {
+  const [showCopyConfirm, setShowCopyConfirm] = useState(false);
+
+  const copyText = () => {
+    navigator.clipboard.writeText(props.textToCopy)
+    setShowCopyConfirm(true)
+  }
+
+  return (
+    <React.Fragment>
+      <Tooltip title="Copy">
+        <IconButton onClick={copyText}>
+          <ContentCopy />
+        </IconButton>
+      </Tooltip>
+      <Snackbar
+        open={showCopyConfirm}
+        autoHideDuration={6000}
+        onClose={() => setShowCopyConfirm(false)}
+        message="Text copied to clipboard"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
+    </React.Fragment>
+  )
+}
+
 function SuggestionDialog(props) {
   const [loadingSuggestion, setLoadingSuggestion] = useState(false);
   const [openSuggestionConfirm, setOpenSuggestionConfirm] = useState(false);
@@ -200,13 +226,7 @@ export default function Home() {
                 <ThumbsUpDownOutlinedIcon/>
               </IconButton>
             </Tooltip>
-            <Tooltip title="Copy">
-              <IconButton
-                onClick={() => {navigator.clipboard.writeText(fixedText)}}
-              >
-                <ContentCopy />
-              </IconButton>
-            </Tooltip>
+            <CopyButton textToCopy={fixedText}></CopyButton>
         </Grid> }
       <SuggestionDialog
         open={openDialog}
