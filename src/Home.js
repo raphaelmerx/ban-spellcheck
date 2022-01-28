@@ -14,13 +14,13 @@ import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import Snackbar from '@mui/material/Snackbar';
 
 import axios from 'axios';
 
@@ -42,26 +42,26 @@ function Copyright(props) {
   );
 }
 
-const theme = createTheme();
-
 export default function Home() {
 
   const [text, setText] = useState('Raris mabejug daun bilané marupa lingga');
   const [fixedText, setFixedText] = useState('Raris mabaju daun bulane mrupa linga.');
   const [loading, setLoading] = useState(false);
+  const [loadingSuggestion, setLoadingSuggestion] = useState(false);
   const [suggestedText, setSuggestedText] = useState('Raris mabaju daun bulane mrupa linga. ');
 
-  const [open, setOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openSuggestionConfirm, setOpenSuggestionConfirm] = useState(false);
 
   const handleClickOpen = () => {
-    setOpen(true);
+    setOpenDialog(true);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setOpenDialog(false);
   };
 
-  const handleSubmit = (event) => {
+  const spellCorrect = (event) => {
     event.preventDefault();
     setLoading(true)
     axios.get('https://api.tetun.org/ban-spell-correct', { params: {text}})
@@ -77,8 +77,26 @@ export default function Home() {
       });
   };
 
+  const sendSuggestion = (event) => {
+    event.preventDefault();
+    setLoadingSuggestion(true)
+    axios.post('https://api.tetun.org/create-suggestion', {
+      initial: text,
+      corrected: fixedText,
+      suggestion: suggestedText,
+    }).then(response => {
+        setOpenDialog(false)
+        setFixedText(suggestedText)
+        setLoadingSuggestion(false)
+        setOpenSuggestionConfirm(true)
+      }).catch((error) => {
+        setLoadingSuggestion(false)
+        // eslint-disable-next-line no-alert
+        window.alert(error);
+      });
+  };
+
   return (
-    <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="sm">
         <CssBaseline />
         <Box
@@ -90,7 +108,7 @@ export default function Home() {
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+          <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
             <SpaceBar />
           </Avatar>
           <Typography component="h1" variant="h5">
@@ -114,7 +132,7 @@ export default function Home() {
               autoFocus
             />
             <LoadingButton
-              onClick={handleSubmit}
+              onClick={spellCorrect}
               fullWidth
               variant="contained"
               sx={{ mt: 2, mb: 3 }}
@@ -145,11 +163,11 @@ export default function Home() {
               </IconButton>
             </Tooltip>
         </Grid> }
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog open={openDialog} onClose={handleClose}>
         <DialogTitle>Edit spelling</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Your contribution will be used to improve quality of the Balinese spell checker.
+            Your contribution will improve the quality of the Balinese spell checker.
           </DialogContentText>
           <TextField
             autoFocus
@@ -165,11 +183,22 @@ export default function Home() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleClose}>Send</Button>
+          <LoadingButton
+            onClick={sendSuggestion}
+            loading={loadingSuggestion}
+          >
+            Send
+          </LoadingButton>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={openSuggestionConfirm}
+        autoHideDuration={6000}
+        onClose={() => setOpenSuggestionConfirm(false)}
+        message="Thank you for the spelling suggestion!"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
         <Copyright sx={{ mt: 12, mb: 4 }} />
       </Container>
-    </ThemeProvider>
   );
 }
