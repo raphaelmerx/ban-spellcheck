@@ -30,15 +30,11 @@ function Copyright(props) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Built using '}
-      <Link color="inherit" href="https://github.com/mammothb/symspellpy">
-        SymSpell
-      </Link>{' '}
-      {'trained on '}
-      <Link color="inherit" href="https://ban.wikipedia.org/">
+      <Link color="inherit" href="https://ban.wikipedia.org/" target="_blank" rel="noopener noreferrer">
         Balinese Wikipedia
       </Link>{' data '}
-      <Link color="inherit" href="https://github.com/raphaelmerx/ban-spellcheck">
-        (source)
+      <Link color="inherit" href="https://github.com/raphaelmerx/ban-spellcheck" target="_blank" rel="noopener noreferrer">
+        (source code)
       </Link>
     </Typography>
   );
@@ -146,8 +142,8 @@ function SuggestionDialog(props) {
 
 export default function Home() {
 
-  const [text, setText] = useState('');
-  const [fixedText, setFixedText] = useState('');
+  const [text, setText] = useState(``);
+  const [fixedText, setFixedText] = useState(``);
   const [loading, setLoading] = useState(false);
 
   const [openDialog, setOpenDialog] = useState(false);
@@ -168,7 +164,7 @@ export default function Home() {
   };
 
   return (
-      <Container component="main" maxWidth="sm">
+      <Container component="main" maxWidth="sm" sx={{ mb: 10 }}>
         <CssBaseline />
         <Box
           sx={{
@@ -235,7 +231,12 @@ export default function Home() {
         fixedText={fixedText}
         onSuccess={savedText => setFixedText(savedText)}
       ></SuggestionDialog>
-        <Copyright sx={{ mt: 12, mb: 4 }} />
+        <Copyright sx={{
+          mt: 12,
+          mb: 4,
+          position: 'fixed',
+          bottom: 0,
+        }} />
       </Container>
   );
 }
